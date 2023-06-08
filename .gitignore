@@ -1,0 +1,12 @@
+auto-save-list/  
+elfeed/  
+elfeed.org  
+elpa/  
+init.el  
+recentf  
+snippets/  
+straight/  
+var/
+.extension/
+.cache/
+*~
