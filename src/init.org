@@ -93,20 +93,6 @@
 Пакетный мененжер для устоновки дополнение
 
 #+begin_src emacs-lisp
-  ;;    (require 'package)
-
-  ;;  (add-to-list 'package-archives '("gnu"   . "https://elpa.gnu.org/packages/"))
-  ;;  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-  ;;  (add-to-list 'package-archives '("nongnu" . "https://elpa.nongnu.org/nongnu/"))
-  ;;    (package-initialize)
-  ;;
-  ;;    (unless (package-installed-p 'use-package )
-  ;;      (package-refresh-contents)
-  ;;      (package-install 'use-package))
-  ;;    (eval-and-compile
-  ;;      (setq use-package-always-ensure t
-  ;;	    use-package-expand-minimally t))
-
   ;; Install straight.el
 (defvar bootstrap-version)
 (let ((bootstrap-file
@@ -125,31 +111,31 @@
 Создать функцию =ensure-installed= для устоновки пакетов
 
 #+begin_src emacs-lisp
-    (defvar *package-lists-fetched* nil)
+      (defvar *package-lists-fetched* nil)
 
-    (defun soft-fetch-package-lists ()
-      (unless *package-lists-fetched*
-	(package-refresh-contents)
-	(setf *package-lists-fetched* t)))
+      (defun soft-fetch-package-lists ()
+        (unless *package-lists-fetched*
+      (package-refresh-contents)
+      (setf *package-lists-fetched* t)))
 
-    ;; package-installed-p will always report NIL if a newer
-    ;; version is available. We do not want that.
-    (defun package-locally-installed-p (package)
-      (assq package package-alist))
+      ;; package-installed-p will always report NIL if a newer
+      ;; version is available. We do not want that.
+      (defun package-locally-installed-p (package)
+        (assq package package-alist))
 
-    (defun ensure-installed (&rest packages)
-      (unless (cl-loop for package in packages
-		       always (package-locally-installed-p package))
-	(soft-fetch-package-lists)
-	(dolist (package packages)
-	  (unless (package-locally-installed-p package)
-	    (package-install package)))))
+      (defun ensure-installed (&rest packages)
+        (unless (cl-loop for package in packages
+                 always (package-locally-installed-p package))
+      (soft-fetch-package-lists)
+      (dolist (package packages)
+        (unless (package-locally-installed-p package)
+          (package-install package)))))
 
-    ;; Disable package.el in favor of straight.el
-  (setq package-enable-at-startup nil)
+      ;; Disable package.el in favor of straight.el
+    (setq package-enable-at-startup nil)
 
-  ;; Install use-package
-(straight-use-package 'use-package)
+    ;; Install use-package
+  (straight-use-package 'use-package)
 #+end_src
 *** Настройка UI
 **** Путь до настройки emacs 
