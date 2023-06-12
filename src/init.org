@@ -71,14 +71,13 @@
 :header-args:org: :tangle ~/.emacs.d/elfeed.org :mkdirp yes
 :END:
 
-#+begin_src org :results raw silent :exports code
+#+begin_src org
   ,* Blogs                                                                  :elfeed:
   ,** Новости IT                                                             :IT:
   ,*** [[https://habr.com/ru/rss/hubs/all/][habr]]
   ,** Быт дом                                                               :HOME:
   ,*** [[https://edatut.webnode.ru/rss/all.xml][Рецепты на любой вкус]]
-  
-#+end_src :rss:
+#+end_src 
 ** init.el    :init:
 :PROPERTIES:
 :CUSTOM_ID: init
@@ -1697,6 +1696,17 @@ keywords-file '("/home/elf/Documents/BOOK/notes"))
 #+end_src
 
 *** Автоматизация
+**** git auto push
+#+begin_src emacs-lisp
+  (use-package git-auto-commit-mode
+  :straight t
+          :ensure t
+          :config
+    (git-auto-commit-mode 1)
+    (setq gac-automatically-push-p t)
+    )
+
+#+end_src
 
 
 
