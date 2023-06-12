@@ -1,4 +1,336 @@
 #+TITLE: README
 
 * Emacs матрёшка
-Скоро появится первая версия <<beta>>
+Настройка текстового редактора [[https://www.gnu.org/software/emacs/][emacs]].
+Это личная настройка моей системы emacs и в ней  
+** Главный файл [[file:~/.emacs.d/init.el][init.el]]
+:PROPERTIES:
+:CUSTOM_ID: init
+:header-args:emacs-lisp: :tangle ~/.emacs.d/init.el :mkdirp yes
+:END:
+*** Пакетный мененжер
+#+begin_src emacs-lisp
+  ;; Install straight.el
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+	 (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+	(bootstrap-version 6))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+	  (url-retrieve-synchronously
+	   "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+	   'silent 'inhibit-cookies)
+	(goto-char (point-max))
+	(eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
+    ;; Install use-package
+  (straight-use-package 'use-package)  
+#+end_src
+*** Проверка орфографии
+Приходится много писать и надо проверить орфографию для неё нужны программы
+вот как их поставить.
+#+begin_src bash :tangle ~/.emacs.d/install.sh
+  sudo apt install spell aspell aspell-ru hunspell hunspell-ru
+#+end_src
+#+begin_src emacs-lisp
+  (with-eval-after-load "ispell"
+    ;;(setenv "LANG" "en_US.UTF-8")
+    (setq ispell-program-name "hunspell")
+    (setq ispell-dictionary "en_US,ru_RU")
+    (ispell-set-spellchecker-params)
+    (ispell-hunspell-add-multi-dic "en_US,ru_RU")
+    (setq ispell-personal-dictionary "~/.hunspell_personal"))
+
+  (add-hook 'org-mode-hook 'flyspell-mode)
+
+  (add-to-list 'ispell-skip-region-alist '(":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:"))
+  (add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_SRC" . "#\\+END_SRC"))
+  (add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_EXAMPLE" . "#\\+END_EXAMPLE"))
+#+end_src
+*** Path
+#+begin_src emacs-lisp
+  (use-package exec-path-from-shell
+  :straight t
+  :ensure t
+  :init
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize)))
+#+end_src
+
+#+begin_src emacs-lisp
+  (require 'xdg)
+
+  (setq
+   VIDEOS_DIR (xdg-user-dir "VIDEOS")
+   PICTURES_DIR (xdg-user-dir "PICTURES")
+   MUSIC_DIR (xdg-user-dir "MUSIC")
+   DOCUMENTS_DIR (xdg-user-dir "DOCUMENTS")
+   PUBLICSHARE_DIR (xdg-user-dir "PUBLICSHARE")
+   TEMPLATES_DIR (xdg-user-dir "TEMPLATES")
+   DOWNLOAD_DIR (xdg-user-dir "DOWNLOAD")
+   DESKTOP_DIR (xdg-user-dir "DESKTOP")
+   )
+  
+#+end_src
+*** fonts
+#+begin_src emacs-lisp
+  (ignore-errors (set-frame-font "DroidSansMon"))
+  (cond
+    ((member "Monaco" (font-family-list))
+     (set-face-attribute 'default nil :font "Monaco-12"))
+    ((member "Inconsolata" (font-family-list))
+     (set-face-attribute 'default nil :font "Inconsolata-12"))
+    ((member "Consolas" (font-family-list))
+     (set-face-attribute 'default nil :font "Consolas-12"))
+    ((member "DejaVu Sans Mono" (font-family-list))
+     (set-face-attribute 'default nil :font "DejaVu Sans Mono-16"))
+    )
+#+end_src
+*** Очистка всего не нежного
+#+begin_src emacs-lisp
+  (menu-bar-mode     -1)
+  (scroll-bar-mode   -1)
+  (tool-bar-mode     -1)
+#+end_src
+*** Сочетание клавиш как в windows (C-c C-v)
+#+begin_src emacs-lisp
+  (cua-mode 1)
+#+end_src
+*** projectile
+#+begin_src emacs-lisp
+  (use-package projectile
+    :ensure t
+    :straight t
+    :config
+    (projectile-mode +1)
+    ;; Recommended keymap prefix on macOS
+    (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
+    ;; Recommended keymap prefix on Windows/Linux
+    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+    )
+#+end_src
+*** Yasnippet
+#+begin_src emacs-lisp
+  (use-package yasnippet
+  :ensure t
+  :straight t
+  :config
+  (yas-reload-all)
+  (add-hook 'prog-mode-hook 'yas-minor-mode)
+  (add-hook 'text-mode-hook 'yas-minor-mode))
+#+end_src
+*** org-mode
+#+begin_src emacs-lisp
+  (use-package org
+    :ensure t
+    :straight t
+    :bind (("C-c c" . org-capture)
+	   ("C-c a" . org-agenda)
+	   )
+    :config
+    )
+#+end_src
+*** org-mode-theme
+#+begin_src emacs-lisp
+  (use-package org-bullets
+  :straight t
+    :after org
+    :hook (org-mode . org-bullets-mode)
+    :custom
+    (org-bullets-bullet-list '("➊" "➋" "➌" "➍" "➎" "➏" "➐" "➑" "➒" "➓")))
+#+end_src
+
+#+begin_src emacs-lisp
+
+  (let* ((variable-tuple
+	  (cond ((x-list-fonts "ETBembo")         '(:font "ETBembo"))
+		((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
+		((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
+		((x-list-fonts "Verdana")         '(:font "Verdana"))
+		((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
+		(nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
+	 (base-font-color     (face-foreground 'default nil 'default))
+	 (headline           `(:inherit default :weight bold :foreground ,base-font-color)))
+
+    (custom-theme-set-faces
+     'user
+     `(org-level-8 ((t (,@headline ,@variable-tuple))))
+     `(org-level-7 ((t (,@headline ,@variable-tuple))))
+     `(org-level-6 ((t (,@headline ,@variable-tuple))))
+     `(org-level-5 ((t (,@headline ,@variable-tuple))))
+     `(org-level-4 ((t (,@headline ,@variable-tuple :height 1.15))))
+     `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.15))))
+     `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.25))))
+     `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.5 ))))
+     `(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil))))))
+#+end_src
+
+*** deft
+#+begin_src emacs-lisp
+  (use-package deft
+  :straight t
+      :ensure t
+      :bind (("C-<f6>" . deft-find-file)
+	     ("<f6>" . deft))
+      :config 
+      (setq deft-default-extension "org")
+      (setq deft-extensions '("org"))
+      (setq deft-directory (concat DOCUMENTS_DIR "notes"))
+      (setq deft-recursive t)
+      (setq deft-use-filename-as-title nil)
+      (setq deft-use-filter-string-for-filename t)
+      (setq deft-file-naming-rules '((noslash . "-")
+				     (nospace . "-")
+				     (case-fn . downcase)))
+      (setq deft-text-mode 'org-mode)
+      )
+#+end_src
+
+*** org-roam
+#+begin_src bash :tangle ~/.emacs.d/install.sh
+  sudo apt install sqlite
+#+end_src
+
+#+begin_src emacs-lisp
+    (setq user-home-notes (concat DOCUMENTS_DIR "2brain"))
+  (use-package org-roam
+  :straight t
+  :ensure t
+  :init
+  (setq org-roam-v2-ack t)
+  :custom
+    (org-roam-dailies-directory "daily/")
+
+    (org-roam-dailies-capture-templates
+	'(("d" "default" entry
+	   "* %?"
+	   :target (file+head "%<%Y-%m-%d>.org"
+			      "#+title: %<%Y-%m-%d>\n"))))
+    (org-roam-directory user-home-notes)
+    (org-roam-completion-everywhere t)
+    (org-roam-dailies-capture-templates
+      '(("d" "default" entry "* %<%I:%M %p>: %?"
+	 :if-new (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n"))))
+    :bind (("C-c n l" . org-roam-buffer-toggle)
+	   ("C-c n f" . org-roam-node-find)
+	   ("C-c n i" . org-roam-node-insert)
+	   :map org-mode-map
+	   ("C-M-i" . completion-at-point)
+	   :map org-roam-dailies-map
+	   ("Y" . org-roam-dailies-capture-yesterday)
+	   ("T" . org-roam-dailies-capture-tomorrow))
+    :bind-keymap
+    ("C-c n d" . org-roam-dailies-map)
+    :config
+    (require 'org-roam-dailies) ;; Ensure the keymap is available
+    (org-roam-db-autosync-mode)
+    (require 'org-roam-export))
+
+  (use-package websocket
+  :straight t
+  :ensure t
+  :after org-roam)
+
+  (use-package org-roam-ui
+  :straight t
+  :after org-roam
+  :ensure t
+  :config
+      (setq org-roam-ui-sync-theme t
+	    org-roam-ui-follow t
+	    org-roam-ui-update-on-save t
+	    org-roam-ui-open-on-start t))
+#+end_src
+
+*** lsp
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+  :straight t
+    :hook ((js2-mode        . lsp-deferred)
+	   (js-mode         . lsp-deferred)
+	   (rjsx-mode       . lsp-deferred)
+	   (typescript-mode . lsp-deferred)
+	   (rust-mode       . lsp-deferred)
+	   (python-mode     . lsp-deferred)
+	   (ruby-mode       . lsp-deferred))
+    :commands (lsp lsp-deferred)
+    :custom
+    ;; what to use when checking on-save. "check" is default, I prefer clippy
+    (lsp-rust-analyzer-cargo-watch-command "clippy")
+    (lsp-eldoc-render-all nil)
+    (lsp-idle-delay 0.6)
+    (lsp-signature-render-documentation nil)
+    (lsp-eldoc-enable-hover nil)
+    ;; enable / disable the hints as you prefer:
+    (lsp-rust-analyzer-server-display-inlay-hints nil)
+    (lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
+    (lsp-rust-analyzer-display-chaining-hints nil)
+    (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
+    (lsp-rust-analyzer-display-closure-return-type-hints nil)
+    (lsp-rust-analyzer-display-parameter-hints nil)
+    (lsp-rust-analyzer-display-reborrow-hints nil)
+  
+    :config
+    (setq lsp-enable-completion-at-point t))
+
+
+  (use-package lsp-ui
+  :straight t
+    :after lsp-mode
+    :commands lsp-ui-mode
+    :hook (lsp-mode . lsp-ui-mode)
+    :custom
+    (lsp-ui-doc-enable t)
+    (lsp-ui-sideline-enable t)
+    (lsp-ui-flycheck-enable t)
+    (lsp-ui-flycheck-live-reporting t)
+    (lsp-ui-sideline-toggle-symbols-info t)
+    (lsp-ui-sideline-show-hover t)
+    (lsp-ui-peek-enable t)
+  
+    (lsp-ui-peek-always-show t)
+    (lsp-ui-sideline-show-hover t)
+
+    (lsp-ui-sideline-enable t)
+    (lsp-ui-sideline-show-code-actions t)
+    ;;(lsp-ui-doc-enable nil)
+
+    )
+
+  (use-package eglot :straight t :ensure t)
+
+  (add-hook 'ja2-mode-hook 'lsp-mode)
+  (add-hook 'css-mode-hook 'lsp-mode)
+  (add-hook 'web-mode-hook 'lsp-mode)
+
+  (add-hook 'ja2-mode-hook 'lsp-ui-mode)
+  (add-hook 'css-mode-hook 'lsp-ui-mode)
+  (add-hook 'web-mode-hook 'lsp-ui-mode)
+#+end_src
+*** company
+#+begin_src emacs-lisp
+  (use-package company
+  :straight t
+    :ensure t
+    :custom
+    (company-idle-delay 0.5) ;; how long to wait until popup
+    ;; (company-begin-commands nil) ;; uncomment to disable popup
+    (company-idle-delay
+     (lambda () (if (company-in-string-or-comment) nil 0)))
+    (company-selection-wrap-around t)
+
+    :bind
+    (:map company-active-map
+	    ("C-n". company-select-next)
+	    ("C-p". company-select-previous)
+	    ("M-<". company-select-first)
+	    ("M->". company-select-last))
+    :config
+    (company-quickhelp-mode 1)
+    (setq company-quickhelp-delay 0.7
+	    company-tooltip-align-annotations t)
+
+    (global-company-mode)
+    (push 'slime-company slime-contribs)
+    )
+#+end_src
