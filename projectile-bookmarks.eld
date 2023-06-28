@@ -1,1 +1,1 @@
-nil
+("~/.emacs.d/" "~/Project/ex1/" "~/tmp/rust-ex/ex1/")

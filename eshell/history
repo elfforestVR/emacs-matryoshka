@@ -1,0 +1,5 @@
+ls
+cc ./main.c 
+ls
+./a.out 
+cc ./main.c && ./a.out 
