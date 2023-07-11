@@ -136,6 +136,123 @@
     :config
     )
 #+end_src
+*** pdf-tools
+#+begin_src emacs-lisp
+  (use-package pdf-tools
+  :straight t
+  :config
+
+  (pdf-tools-install)
+
+  (setq-default pdf-view-display-size 'fit-width)
+
+  (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
+
+  :custom
+
+  (pdf-annot-activate-created-annotations t "automatically annotate highlights"))
+
+  (setq TeX-view-program-selection '((output-pdf "PDF Tools"))
+
+  TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view))
+
+  TeX-source-correlate-start-server t)
+
+  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
+
+  (add-hook 'pdf-view-mode-hook (lambda() (linum-mode -1)))
+
+  (use-package org-noter-pdftools
+    :after org-noter :straight t)
+#+end_src
+*** org-noter
+#+begin_src emacs-lisp
+  (use-package org-noter
+    :after org
+    :straight t
+    :config
+  ;; Your org-noter config ........
+    (require 'org-noter-pdftools))
+
+#+end_src
+*** bibtex
+#+begin_src emacs-lisp
+    (setq
+  completion-bibliography '("/home/elf/Doc/BOOK/BOOK.bib")
+  completion-library-path '("/home/elf/Doc/BOOK/pdfs")
+  completion-notes-path '("/home/elf/Doc/BOOK/notes")
+  bibtex-file-path completion-notes-path)
+
+  (setq bibtex-completion-bibliography completion-bibliography
+	bibtex-completion-library-path completion-library-path
+	bibtex-completion-notes-path completion-notes-path
+	bibtex-completion-find-additional-pdfs t
+	bibtex-completion-pdf-extension '(".pdf" ".html" ".epub" )
+	bibtex-dialect 'biblatex
+	bibtex-file-path bibtex-file-path
+	bibtex-files '(bibtex-file-path)
+	bibtex-autokey-year-length 0
+	bibtex-autokey-names 2
+	bibtex-autokey-names-stretch 1
+	bibtex-autokey-additional-names "EtAl"
+	bibtex-autokey-name-case-convert-function 'capitalize
+	bibtex-autokey-name-year-separator nil
+	bibtex-autokey-year-title-separator "-"
+	bibtex-autokey-titleword-separator ""
+	bibtex-autokey-titlewords 2
+	bibtex-autokey-titlewords-stretch 1
+	bibtex-autokey-titleword-length "infnty"
+	bibtex-autokey-titleword-case-convert-function 'capitalize
+	bibtex-autokey-before-presentation-function 'xah-asciify-string)
+
+
+  (use-package marginalia
+    :ensure t
+    :straight t
+    :config
+    (marginalia-mode))
+
+  (use-package ebib
+      :ensure t
+      :straight t
+      :config
+      (org-add-link-type "ebib" 'ebib)
+  )
+
+  ;;; EBIB
+  (setq
+  keywords-file '("/home/elf/Doc/BOOK/notes"))
+  (setq ebib-bibtex-dialect 'biblatex
+	ebib-preload-bib-files completion-bibliography
+	ebib-use-timestamp t ;; todo customize on export info:ebib#Timestamps
+	ebib-file-search-dirs completion-library-path
+	ebib-notes-directory completion-notes-path
+	ebib-notes-storage 'one-file-per-note
+	ebib-notes-locations completion-notes-path
+	ebib-notes-default-file nil 
+	ebib-keywords-file keywords-file
+	ebib-keywords-field-keep-sorted t
+	ebib-keywords-file-save-on-exit 'always
+	ebib-notes-show-note-method 'top-lines
+	ebib-notes-display-max-lines 300
+	ebib-popup-entry-window nil ;; no effect unless ebib-layout set to ’index-only
+	ebib-layout 'index-only)
+
+
+  (use-package citar
+    :no-require
+    :straight t
+    :custom
+    (org-cite-global-bibliography completion-bibliography)
+    (org-cite-insert-processor 'citar)
+    (org-cite-follow-processor 'citar)
+    (org-cite-activate-processor 'citar)
+    (citar-bibliography org-cite-global-bibliography)
+    ;; optional: org-cite-insert is also bound to C-c C-x C-@
+    :bind
+    (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
+
+#+end_src
 *** org-mode-theme
 #+begin_src emacs-lisp
   (use-package org-bullets
